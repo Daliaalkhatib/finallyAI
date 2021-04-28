@@ -25,8 +25,15 @@ import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 
-import java.io.IOException;
-import java.util.Arrays;
+
+   import java.io.BufferedReader;
+   import java.io.IOException;
+   import java.io.InputStream;
+   import java.io.InputStreamReader;
+   import java.nio.charset.Charset;
+   import java.util.ArrayList;
+   import java.util.Arrays;
+   import java.util.List;
 
    public class MainActivity extends AppCompatActivity {
        private static final int RC_SIGN_IN = 9001;
@@ -59,8 +66,45 @@ import java.util.Arrays;
     public void onLoginButtonPressed(View view) throws IOException {
            signIn();
     }
+       private final List<WeatherSample> WeatherSamples = new ArrayList<>();
 
-    private void signIn() {
+       private void readWeatherData() {
+           InputStream is = getResources().openRawResource(R.raw .spam_or_not_spam);
+           BufferedReader reader =new BufferedReader( new InputStreamReader(is, Charset.forName("UTF_8")));
+
+           String line="";
+
+           try {
+               reader.readLine();
+               while ((line = reader.readLine()) != null) {
+                   Log.d("MyActivity","line:" + line);
+                   String [] tokens =line.split(",");
+                   WeatherSample sample =new WeatherSample();
+                   sample.setEmail((tokens[0]));
+                   if(tokens[1].length() > 0){
+                       sample.setLabel(Integer.parseInt(tokens[1]));}
+                   else {
+                       sample.setLabel(0);
+                   }
+
+                   WeatherSamples.add(sample);
+
+                   Log.d("MYActivity","just created"+sample);
+
+
+
+               }
+
+           } catch (IOException e) {
+               Log.wtf("MyActivity" ,"Error reading data file on line "+ line ,e);
+               e.printStackTrace();
+           }
+
+       }
+
+
+
+       private void signIn() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
 
